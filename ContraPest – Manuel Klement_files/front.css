@@ -1,0 +1,71 @@
+/*
+* CSS file for upf Custom Fields add-on sesttings page
+*/
+
+
+/* Override columns css in list view */
+.upfp_content_wrapper{
+	overflow-x: auto;
+}
+#upfp_file.upfp_col{
+	width: 60%;
+}
+#upf-cf-add-field-frm{
+	max-height: 600px;
+	overflow-y: auto;
+}
+.is-file-prvw.upfp_content_wrapper{
+	overflow-x: unset;
+}
+.upfp_content_wrapper #upfp_main_list_view, .upfp_content_wrapper .items_list{
+	padding: 0;
+}
+#upfp_main_list_view .upfp_list_cols{
+	background-color: var(--primary-color);
+}
+.upfp_list_cols{
+	min-width: 19%;
+}
+.is-file-prvw .upfp_list_cols{
+	min-width: auto;
+}
+.items_list:nth-child(even) .upfp_list_cols{
+	background-color: #f0f0f0;
+}
+
+#upfp_main_list_view.upfp_list_view_container .upfp_list_cols:nth-child(6) {
+	border-right: 1px solid #cccccc;
+}
+#upfp_main_list_view.upfp_list_view_container .upfp_list_cols:nth-last-child(3){
+	border-right: 0;
+}
+.upf-cf-add-field-value {
+	display: flex;
+	margin-bottom: 10px;
+	align-items: center;
+}
+.upf-cf-add-field-value label {
+	width: 25%;
+}
+.upfp_list_view_container .upfp_list_thumb{
+	min-width: 30px;
+}
+
+/* File preview sidebar */
+textarea.upf_cf_sidebar_field_label{
+	width: 95%;
+	margin-left: 2.5%;
+	border: 1px solid rgb(204, 204, 204);
+}
+
+/* popup for edit field values */
+.upf-cf-edit-field-pp form{
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.upfp_row #upfp_file #upfp_main_list_view .upfp_list_cols{
+	flex-grow: 1;
+}
+

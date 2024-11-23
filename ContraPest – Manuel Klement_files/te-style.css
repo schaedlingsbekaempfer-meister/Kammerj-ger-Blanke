@@ -1,0 +1,59 @@
+/* 
+* Styling related to CK Editor
+*/
+
+.ck-powered-by-balloon {
+	display: none !important;
+}
+.ck.ck-toolbar > .ck-toolbar__items {
+	flex-flow: row !important;
+	flex-grow: 0 !important;
+}
+.ck.ck-toolbar .ck.ck-toolbar__separator {
+	display: none !important;
+}
+
+/* editing area */
+.ck-editor__editable[role="textbox"] {
+	height: 600px;
+}
+.ck-content .image {
+	max-width: 80%;
+	margin: 20px auto;
+}
+.ck-toolbar__items > div:not(:hover),
+.ck-toolbar__items button:not(.ck-color-grid button):not(:hover) {
+	background: var(--primary-color) !important;
+	color: white !important;
+}
+.ck-toolbar__items > div:hover, .ck-toolbar__items button:hover {
+	background: var(--hover-color) !important;
+	color: white !important;
+}
+
+/* New Buttons */
+#upvf-download-file .download-btns {
+	background: var(--primary-color);
+	padding: 7px 10px;
+	color: #fff;
+	margin-right: 10px;
+	width: 160px;
+	cursor: pointer;
+	border-radius: 0;
+	border: 1px solid var(--primary-color);
+	font-size: 11pt;
+	text-transform: capitalize;
+}
+
+#upvf-download-file .download-btns:hover {
+	background-color: var(--hover-color);
+	border: 1px solid var(--hover-color);
+}
+
+.ck.ck-balloon-panel.ck-tooltip{
+	z-index: 99999 !important;
+}
+
+.ck.ck-toolbar__items{
+    font-size: 8.5pt !important;
+}

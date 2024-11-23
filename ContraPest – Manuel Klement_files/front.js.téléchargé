@@ -1,0 +1,230 @@
+/*
+* Handle UPF CF frontend actions
+*/
+
+jQuery(document).ready(function ($) {
+	
+	// Get fields popup after file is uploaded
+	if(ajax_upf_cf_front_obj.upf_cf_force_form == 'on'){
+		$(document).on('upf-js-after-file-upload', function(e, data){
+			$('.upf-cf-add-fields-pp').show();
+			$('.upf-cf-add-fields-pp').find('#upf-cf-file-id').val(data.file_id);
+		});
+	}
+	
+	// Insert fields for a file
+	$('#upf-cf-add-field-frm').on('submit', function(e){
+		
+		e.preventDefault();
+		
+		var file_id = $('#upf-cf-add-field-frm #upf-cf-file-id').val();
+		
+		var fd = new FormData();
+		
+		fd.append( "file_id", file_id );
+		
+		var fields = [];
+		$('.upf_cf_field').each(function(key, elem) {
+			var key = $(elem).attr('data-key');
+			fd.append( "fields[" + key + "]", $(elem).val() );
+		});
+		
+		fd.append("upf_cf_nonce", ajax_upf_cf_front_obj.nonce);
+		fd.append( "action", "upf_cf_file_insert_fields" );
+		
+		jQuery.ajax({
+			url: ajax_upf_cf_front_obj.ajaxurl,
+			type: "POST",
+			data: fd,
+			contentType: false,
+			processData: false,
+			dataType: "JSON",
+		})
+		.done(function (results) {
+			if (results.error) {
+				console.log(results.error);
+			} 
+			else {
+				
+				var custom_fields = results.upf_cf;
+				
+				$.each( custom_fields, function( key, value ) {
+					
+					// Update in content
+					$("body").find("#doc_" + file_id + " .upf_cf_row_key_" + key).html(value);
+					
+				});
+				
+				// close popup
+				$(".upf-cf-add-fields-pp").hide();
+				$(".upf-cf-add-fields-pp").find("form")[0].reset();
+				
+				
+			}
+		})
+		.fail(function (data) {
+			console.log(data.responseText);
+			console.log("Request Failed. Status - " + data.statusText);
+		});
+		
+	});
+	
+	// Populate Fields in file preview 
+	$(".upfp_content").on("click", ".upfp_file_obj > *:not(.upfp_toggle_sub_menu, .upfp_submenu_container)", function () {
+		
+		if (is_bulk) {
+			return;
+		}
+		
+		let doc_id = $(this).closest(".upfp_file_obj").attr("id");
+		var is_shared = $(this).closest(".upfp_file_obj").attr("data-share");
+		
+		var fd = new FormData();
+		fd.append("doc_id", doc_id);
+		fd.append("upf_cf_nonce", ajax_upf_cf_front_obj.nonce);
+		
+		if (jQuery(".upfp_content").attr("data-inside") == "shared" || is_shared) {
+			fd.append("inside_shared", true);
+		}
+		
+		fd.append("action", "upf_cf_file_prev_fields");
+		jQuery.ajax({
+			url: ajax_upf_cf_front_obj.ajaxurl,
+			type: "POST",
+			data: fd,
+			contentType: false,
+			processData: false,
+			dataType: "JSON",
+		})
+		.done(function (results) {
+			if (results.error) {
+				console.log(results.error);
+			} 
+			else {
+				
+				if(!results.is_user_authorised){
+					$('.upf_cf_sidebar_edit_field').hide();
+				}
+				else{
+					$('.upf_cf_sidebar_edit_field').show();
+				}
+				
+				var custom_fields = results.upf_cf;
+				
+				$.each( custom_fields, function( key, value ) {
+					
+					$('.upfp_file_info .upf_cf_side_' + key ).html(value);
+					
+				});
+				
+			}
+		})
+		.fail(function (data) {
+			console.log(data.responseText);
+			console.log("Request Failed. Status - " + data.statusText);
+		});
+		
+	});
+	
+	
+	// Update Custom field
+	$("body").on("click", ".upf_cf_sidebar_edit_field", function () {
+		var target_file = $(".edit_doc_upf_popup").attr("data-file");
+		if(!target_file) {
+			target_file = $(this).closest('.upfp_file_obj').attr('id');
+		}
+		target_file = target_file.replace("doc_", "");
+		
+		if (target_file.length > 0) {
+			var field_name = $(this).parent().attr('data-cf-name');
+			var current_value = $(this).parent().next('.upf_cf_sidebar_field_label').html();
+			
+			if( $(this).parent().next('.upf_cf_sidebar_field_label').is("textarea") ) {
+				$(".upf-cf-edit-field-pp #upf-cf-field-value").remove();
+				$(".upf-cf-edit-field-pp form").prepend('<textarea id="upf-cf-field-value"></textarea>');
+			} 
+			else{
+				$(".upf-cf-edit-field-pp #upf-cf-field-value").remove();
+				$(".upf-cf-edit-field-pp form").prepend('<input type="text" id="upf-cf-field-value">');
+			}
+			
+			var this_field_key = $(this).parent().next('.upf_cf_sidebar_field_label').attr('data-cf-key');
+			$(".upf-cf-edit-field-pp").attr('target_field', this_field_key);
+			
+			$(".upf-cf-edit-field-pp h4").html(field_name);
+			
+			$(".upf-cf-edit-field-pp #upf-cf-field-value").val(current_value);
+			
+			$(".upf-cf-edit-field-pp #upf-cf-field-id").val(target_file);
+			$(".upf-cf-edit-field-pp #upf-cf-field-label").val(field_name);
+			$(".upf-cf-edit-field-pp").show();
+		}
+	});
+	
+	$("body").on("click", ".upf-cf-edit-field-cls", function () {
+		$(".upf-cf-edit-field-pp").hide();
+		$(".upf-cf-edit-field-pp").find("form")[0].reset();
+	});
+	$("body").on("submit", "#upf-cf-edit-field-frm", function (e) {
+		e.preventDefault();
+		var fd = new FormData();
+		var file_id = $(this).find("#upf-cf-field-id").val();
+		var field_val = $(this).find("#upf-cf-field-value").val();
+		var target_field_key = $(".upf-cf-edit-field-pp").attr('target_field');
+		
+		fd.append("file_id", file_id);
+		fd.append("key", target_field_key);
+		fd.append("field_val", field_val);
+		fd.append("upf_cf_nonce", ajax_upf_cf_front_obj.nonce);
+		fd.append("action", "upf_cf_update_field_val");
+		jQuery
+		.ajax({
+			url: ajax_upf_cf_front_obj.ajaxurl,
+			type: "POST",
+			data: fd,
+			contentType: false,
+			processData: false,
+			dataType: "JSON",
+		})
+		.done(function (results) {
+			if (results.error) {
+				console.log(results.error);
+			} 
+			else {
+				if (results.field_val) {
+					
+					// Update in sidebar
+					$(".upfp_file_info .upf_cf_side_" + target_field_key).html(field_val);
+					
+					// content
+					$("body").find("#doc_" + file_id + " .upf_cf_row_key_" + target_field_key).html(field_val);
+
+					// close popup
+					$(".upf-cf-edit-field-pp").hide();
+					$(".upf-cf-edit-field-pp").find("form")[0].reset();
+				}
+			}
+		})
+		.fail(function (data) {
+			console.log(data.responseText);
+			console.log("Request Failed. Status - " + data.statusText);
+		});
+	});
+	
+	/*
+	* Trigger hooks
+	*/
+	// file preview
+	$(document).on('upf-file-prvw-open', function(e, data){
+		$('.upfp_content_wrapper').addClass('is-file-prvw');
+	});
+	
+	$(document).on('upf-file-prvw-cls', function(e, data){
+		$('.upfp_content_wrapper').removeClass('is-file-prvw');
+	});
+	
+	$(document).on('upf-folder-loads', function(e, data){
+		$('.upfp_content_wrapper').removeClass('is-file-prvw');
+	});
+	
+});
